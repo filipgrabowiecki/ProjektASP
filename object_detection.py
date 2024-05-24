@@ -8,11 +8,9 @@ class ObjectDetection:
         self.model = YOLO('yolov8n.pt')
         self.list_of_bottle_position = []
 
-    def update(self, mission1):
-        mission = mission1
+    def update(self, mission):
         img = self.drone.get_frame_read().frame
-        img = cv2.resize(img, (1280, 720))
-        results = self.model(img)
+        results = self.model(img, verbose=False)
 
         list_of_objects = [results[0].boxes.cls]
 
