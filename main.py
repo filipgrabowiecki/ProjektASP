@@ -59,34 +59,36 @@ class TelloDrone:
         self.bat_temp.update()
 
     def first_landing_func(self):
-        if self.mission1_done:
+        if self.mission1_done == True and self.has_landed == False:
             self.rc_control(0, 0, 0, 0)
             self.drone.land()
+            self.has_landed = True
 
     def objectDetection(self):
         self.list_of_bottle_position = self.object_detection.update(self.mission1)
         if self.list_of_bottle_position is not None and self.mission1_done == False:
             print("gotowe")
-            print(self.list_of_bottle_position)
+            self.new_list_of_bottle_position = self.list_of_bottle_position
+            print(f"CZY TO TO?: {self.new_list_of_bottle_position}")
             self.mission1_done = True
 
     def mission_func(self):
-        # print(f"start_yaw: {self.yaw} yaw:{self.drone.get_yaw()}")
-        if self.drone.get_yaw() < self.yaw + 5 and self.drone.get_yaw() > self.yaw - 5:
-        # if self.drone.get_yaw() > 100:
-            print("done")
-            self.mission1 = False
-            # print(self.mission1)
-        else:
-            # print(self.mission1)
-            self.rc_control(0,0,0,15)
-
+        print(f"start_yaw: {self.yaw} yaw:{self.drone.get_yaw()}")
+        if self.mission1_done == False:
+            if self.drone.get_yaw() < self.yaw + 5 and self.drone.get_yaw() > self.yaw - 5:
+            # if self.drone.get_yaw() > 100:
+                print("done")
+                self.mission1 = False
+                # print(self.mission1)
+            else:
+                # print(self.mission1)
+                self.rc_control(0,0,0,30)
     def main(self):
         self.kill_switch = self.TelloKillSwitch(self)
         self.kill_switch.start()
         self.stop_controller = Event()
 
-        battery_temp_obj = self.Threading(1.0, self.stop_controller, self.batteryTempCheck)
+        battery_temp_obj = self.Threading(10.0, self.stop_controller, self.batteryTempCheck)
         battery_temp_obj.start()
 
         object_detection_obj = self.Threading(0.001, self.stop_controller, self.objectDetection)
@@ -111,6 +113,8 @@ class TelloDrone:
         self.yaw = 0
         self.mission1 = True
         self.mission1_done = False
+        self.has_landed = False
+        self.new_list_of_bottle_position = []
 
         self.drone = Tello()
         self.drone.connect()

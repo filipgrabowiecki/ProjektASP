@@ -49,7 +49,7 @@ class ObjectDetection:
             width_dif = (960- width)/2
             if not self.is_it_done:
                 if mission1:
-                    print("mission - True")
+                    # print("mission - True")
                     if left > width_dif - 20 and left < (width_dif + 20 + width):
                         distance_from_obj = int(round(36420*height**(-1.059), 0))
                         bottle_yaw = self.drone.get_yaw()
@@ -57,7 +57,7 @@ class ObjectDetection:
                         self.list_of_bottle_position.append([distance_from_obj, bottle_yaw])
                         return None
                 else:
-                    print("mission - FALSE")
+                    # print("mission - FALSE")
                     return self.list_of_bottle_position
                     self.is_it_done = True
 
