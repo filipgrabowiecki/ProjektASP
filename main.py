@@ -58,23 +58,27 @@ class TelloDrone:
     def batteryTempCheck(self):
         self.bat_temp.update()
 
+    def first_landing_func(self):
+        if self.mission1_done:
+            self.rc_control(0, 0, 0, 0)
+            self.drone.land()
+
     def objectDetection(self):
         self.list_of_bottle_position = self.object_detection.update(self.mission1)
-        print(self.list_of_bottle_position)
+        if self.list_of_bottle_position is not None and self.mission1_done == False:
+            print("gotowe")
+            print(self.list_of_bottle_position)
+            self.mission1_done = True
 
     def mission_func(self):
-        print(f"start_yaw: {self.yaw} yaw:{self.drone.get_yaw()}")
-
-        # if get_yaw <= self.yaw - 5 and get_yaw >= self.yaw + 5:
+        # print(f"start_yaw: {self.yaw} yaw:{self.drone.get_yaw()}")
         if self.drone.get_yaw() < self.yaw + 5 and self.drone.get_yaw() > self.yaw - 5:
+        # if self.drone.get_yaw() > 100:
             print("done")
             self.mission1 = False
-            print(self.mission1)
-            self.rc_control(0,0,0,0)
-            time.sleep(7)
-            self.drone.land()
+            # print(self.mission1)
         else:
-            print(self.mission1)
+            # print(self.mission1)
             self.rc_control(0,0,0,15)
 
     def main(self):
@@ -87,6 +91,9 @@ class TelloDrone:
 
         object_detection_obj = self.Threading(0.001, self.stop_controller, self.objectDetection)
         object_detection_obj.start()
+
+        first_landing_func_obj = self.Threading(0.001, self.stop_controller, self.first_landing_func)
+        first_landing_func_obj.start()
 
         time.sleep(5)
         self.drone.takeoff()
@@ -103,6 +110,7 @@ class TelloDrone:
     def __init__(self):
         self.yaw = 0
         self.mission1 = True
+        self.mission1_done = False
 
         self.drone = Tello()
         self.drone.connect()

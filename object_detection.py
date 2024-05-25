@@ -7,10 +7,12 @@ class ObjectDetection:
         self.drone = tello_drone
         self.model = YOLO('yolov8n.pt')
         self.list_of_bottle_position = []
+        self.is_it_done = False
 
     def update(self, mission):
+        mission1 = mission
         img = self.drone.get_frame_read().frame
-        results = self.model(img, verbose=False)
+        results = self.model(img, verbose=False, conf=0.5)
 
         list_of_objects = [results[0].boxes.cls]
 
@@ -45,14 +47,19 @@ class ObjectDetection:
             width = person_xyxy[2] - person_xyxy[0]
             height = person_xyxy[3] - person_xyxy[1]
             width_dif = (960- width)/2
-            if mission:
-                if left > width_dif - 20 and left < (width_dif + 20 + width):
-                    distance_from_obj = int(round(36420*height**(-1.059), 0))
-                    bottle_yaw = self.drone.get_yaw()
-                    self.list_of_bottle_position.append([distance_from_obj, bottle_yaw])
-                    return None
-            else:
-                return self.list_of_bottle_position
+            if not self.is_it_done:
+                if mission1:
+                    print("mission - True")
+                    if left > width_dif - 20 and left < (width_dif + 20 + width):
+                        distance_from_obj = int(round(36420*height**(-1.059), 0))
+                        bottle_yaw = self.drone.get_yaw()
+                        print("DODAJE")
+                        self.list_of_bottle_position.append([distance_from_obj, bottle_yaw])
+                        return None
+                else:
+                    print("mission - FALSE")
+                    return self.list_of_bottle_position
+                    self.is_it_done = True
 
             # print(f"top: {top} left: {left} width: {width} height: {height}")
 
