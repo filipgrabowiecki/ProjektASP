@@ -2,74 +2,49 @@ import math
 import cv2
 import numpy as np
 
-values = [[126, 59], [120, 61], [121, 63], [120, 63], [121, 64], [121, 66], [181, -85], [178, -84], [181, -84], [177, -82], [179, -80]]
+old_all_points = [[126, 59], [120, 61], [121, 63], [120, 63], [121, 64], [121, 66], [181, -85], [178, -84], [181, -84], [177, -82], [179, -80]]
+all_points = []
+for i in old_all_points:
+    new_yaw = 0
+    if i[1] < 0:
+        new_yaw = 360 + i[1]
+        all_points.append([i[0], new_yaw])
+    else:
+        all_points.append([i[0], i[1]])
 
-array1 = []
-array2 = []
+a = 0
+yaw_sum = 0
+dist_sum = 0
+new_points = []
 
-value0 = values[0]
-array1_filled  = False
-
-for i in range(len(values)):
-        if i == 0:
-                array1.append(values[0])
+for i in range(len(all_points)):
+    a += 1
+    if a == 1:
+        yaw_sum += all_points[i][1]
+        dist_sum += all_points[i][0]
+    else:
+        if 5 >= all_points[i][1] - all_points[i - 1][1] >= -5:
+            yaw_sum += all_points[i][1]
+            dist_sum += all_points[i][0]
+            if i == len(all_points) - 1:
+                new_points.append([int(round(dist_sum/a, 0)), int(round(yaw_sum/a, 0))])
         else:
-                if values[i][1] - values[i-1][1] <= 5 and values[i][1] - values[i-1][1] >= -5:
-                        if not array1_filled:
-                                array1.append(values[i])
-                        else:
-                                array2.append(values[i])
-                else:
-                        array2.append(values[i])
-                        array1_filled = True
-
-
-print(array1)
-print(array2)
-
-sumDistance_1 = 0
-sumYaw_1 = 0
-sumDistance_2 = 0
-sumYaw_2 = 0
-for element in array1:
-        sumDistance_1 += element[0]
-        sumYaw_1 += element[1]
-
-for element in array2:
-        sumDistance_2 += element[0]
-        sumYaw_2 += element[1]
-
-mean_dist_1 = int(round(sumDistance_1/len(array1), 0))
-mean_yaw_1 = int(round(sumYaw_1/len(array1), 0))
-mean_dist_2 = int(round(sumDistance_2/len(array2), 0))
-mean_yaw_2 = int(round(sumYaw_2/len(array2), 0))
-
-print(f"Mean dist Bottle 1: {mean_dist_1}\nMean yaw Bottle 1: {mean_yaw_1}")
-print(f"Mean dist Bottle 2: {mean_dist_2}\nMean yaw Bottle 2: {mean_yaw_2}")
-yaw_1 = 0
-yaw_2 = 0
-
-if mean_yaw_1 < 0:
-      yaw_1 = 360 + mean_yaw_1
-else:
-        yaw_1 = mean_yaw_1
-
-if mean_yaw_2 < 0:
-      yaw_2 = 360 + mean_yaw_2
-else:
-        yaw_2 = mean_yaw_2
-
-yaw_1_rad = math.radians(yaw_1)
-x1 = int(round(mean_dist_1*math.sin(yaw_1_rad), 0))
-y1 = int(round(mean_dist_1*math.cos(yaw_1_rad), 0))
-
-yaw_2_rad = math.radians(yaw_2)
-x2 = int(round(mean_dist_2*math.sin(yaw_2_rad), 0))
-y2 = int(round(mean_dist_2*math.cos(yaw_2_rad), 0))
+            new_points.append([int(round(dist_sum/(a-1), 0)), int(round(yaw_sum/(a-1), 0))])
+            dist_sum = 0
+            yaw_sum = 0
+            a = 0
+print(new_points)
 
 background = np.zeros((600, 600, 3), dtype=np.uint8)
 cv2.circle(background, (300, 300), 5, (255, 0, 0), 2)
-cv2.circle(background, (300+x1, 300-y1), 2, (0, 255, 0), 2)
-cv2.circle(background, (300+x2, 300-y2), 2, (0, 255, 0), 2)
-cv2.imshow("map", background)
+for i in new_points:
+    radians = math.radians(i[1])
+    x = int(round(i[0]*math.sin(radians), 0))
+    y = int(round(i[0]*math.cos(radians), 0))
+    cv2.circle(background, (300 + x, 300 - y), 3, (0, 255, 0), 2)
+
+cv2.imshow("mapping", background)
 cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+
