@@ -11,6 +11,7 @@ import keyboard
 
 import battery_temp
 import object_detection
+import mapping
 
 
 class TelloDrone:
@@ -54,7 +55,9 @@ class TelloDrone:
         self.drone.send_rc_control(left_right_velocity=lr, forward_backward_velocity=fb,
                                    up_down_velocity=up, yaw_velocity=y)
 
-
+    def mapping_func(self):
+        if len(self.new_list_of_bottle_position) > 0:
+            self.mapping.update(self.new_list_of_bottle_position)
     def batteryTempCheck(self):
         self.bat_temp.update()
 
@@ -74,21 +77,21 @@ class TelloDrone:
 
     def mission_func(self):
         print(f"start_yaw: {self.yaw} yaw:{self.drone.get_yaw()}")
-        if self.mission1_done == False:
-            if self.drone.get_yaw() < self.yaw + 5 and self.drone.get_yaw() > self.yaw - 5:
+        if not self.mission1_done:
+            if self.yaw + 5 > self.drone.get_yaw() > self.yaw - 5:
             # if self.drone.get_yaw() > 100:
                 print("done")
                 self.mission1 = False
                 # print(self.mission1)
             else:
                 # print(self.mission1)
-                self.rc_control(0,0,0,30)
+                self.rc_control(0,0,0,15)
     def main(self):
         self.kill_switch = self.TelloKillSwitch(self)
         self.kill_switch.start()
         self.stop_controller = Event()
 
-        battery_temp_obj = self.Threading(10.0, self.stop_controller, self.batteryTempCheck)
+        battery_temp_obj = self.Threading(20.0, self.stop_controller, self.batteryTempCheck)
         battery_temp_obj.start()
 
         object_detection_obj = self.Threading(0.001, self.stop_controller, self.objectDetection)
@@ -96,6 +99,9 @@ class TelloDrone:
 
         first_landing_func_obj = self.Threading(0.001, self.stop_controller, self.first_landing_func)
         first_landing_func_obj.start()
+
+        mapping_func_obj = self.Threading(0.1, self.stop_controller, self.mapping_func)
+        mapping_func_obj.start()
 
         time.sleep(5)
         self.drone.takeoff()
@@ -122,6 +128,7 @@ class TelloDrone:
 
         self.bat_temp = battery_temp.Battery_temp(self.drone)
         self.object_detection = object_detection.ObjectDetection(self.drone)
+        self.mapping = mapping.Mapping()
 
         self.main()
         time.sleep(80)
