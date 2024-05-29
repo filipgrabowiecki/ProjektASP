@@ -7,8 +7,9 @@ class ObjectDetection:
         self.drone = tello_drone
         self.model = YOLO('yolov8n.pt')
         self.list_of_bottle_position = []
+        self.first_order = None
 
-    def update(self, mission):
+    def update(self, mission, mission_2):
         img = self.drone.get_frame_read().frame
         results = self.model(img, verbose=False)
 
@@ -45,15 +46,43 @@ class ObjectDetection:
             width = person_xyxy[2] - person_xyxy[0]
             height = person_xyxy[3] - person_xyxy[1]
             width_dif = (960- width)/2
-            if mission:
-                if left > width_dif - 20 and left < (width_dif + 20 + width):
-                    distance_from_obj = int(round(36420*height**(-1.059), 0))
-                    bottle_yaw = self.drone.get_yaw()
-                    self.list_of_bottle_position.append([distance_from_obj, bottle_yaw])
-                    return None
+            height_dif = (720 - height)/2
+            if not mission_2:
+                if mission:
+                    if left > width_dif - 20 and left < (width_dif + 20 + width):
+                        distance_from_obj = int(round(36420*height**(-1.059), 0))
+                        bottle_yaw = self.drone.get_yaw()
+                        self.list_of_bottle_position.append([distance_from_obj, bottle_yaw])
+                        print("Dodaje")
+                        return None
+                else:
+                    return self.list_of_bottle_position
             else:
-                return self.list_of_bottle_position
 
+                if left > (width_dif + 50 + width):
+                    # print("DRONE RIGHT")
+                    self.first_order = "right"
+
+                elif left < width_dif - 50:
+                    self.first_order = "left"
+
+                elif left > width_dif - 50 and left < (width_dif + 50 + width):
+
+                    if top > (height_dif + 100 + height):
+                        self.first_order = "down"
+
+                    if top < height_dif - 100:
+
+                        self.first_order = "up"
+
+                    if top > (height_dif - 100) and top < (height_dif + 100 + height):
+
+                        self.first_order = "straight"
+
+                        if height > 200:
+                            self.first_order = "land"
+
+                return self.first_order
             # print(f"top: {top} left: {left} width: {width} height: {height}")
 
         image_ready = results[0].plot()
