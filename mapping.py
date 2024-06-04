@@ -1,4 +1,4 @@
-
+import time
 import math
 import cv2
 import numpy as np
@@ -53,7 +53,9 @@ class Mapping:
             y = int(round(i[0] * math.cos(radians), 0))
             cv2.circle(background, (300 + x, 300 - y), 3, (0, 255, 0), 2)
 
-        cv2.imshow("mapping", background)
+        # cv2.imshow("mapping", background)
         cv2.imwrite("mai_image.jpg", background)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        time.sleep(500)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
