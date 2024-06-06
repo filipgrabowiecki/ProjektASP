@@ -6,12 +6,10 @@ import numpy as np
 
 class Mapping:
 
-    # def __init__(self):
-    #     self.old_all_points = points
-
     def update(self, points):
         old_all_points = points
-        # old_all_points = [[126, 59], [120, 61], [121, 63], [120, 63], [121, 64], [121, 66], [181, -85], [178, -84], [181, -84], [177, -82], [179, -80]]
+
+        # Change yaw to (0;360) form (-180; 180)
         all_points = []
         for i in old_all_points:
             new_yaw = 0
@@ -26,6 +24,7 @@ class Mapping:
         dist_sum = 0
         new_points = []
 
+        # Filter out duplicate points
         for i in range(len(all_points)):
             a += 1
             if a == 1:
@@ -45,6 +44,7 @@ class Mapping:
                     a = 0
         print(new_points)
 
+        # Display mapping
         background = np.zeros((600, 600, 3), dtype=np.uint8)
         cv2.circle(background, (300, 300), 5, (255, 0, 0), 2)
         for i in new_points:

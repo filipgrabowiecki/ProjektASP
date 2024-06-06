@@ -1,17 +1,13 @@
 from threading import Thread, Event
-from ultralytics import YOLO
 import time
 from djitellopy import Tello
-import csv
-import matplotlib.pyplot as plt
-import cv2
-import numpy as np
 import keyboard
+
+from enum import Enum
 
 import battery_temp
 import object_detection
 import mapping
-from enum import Enum
 
 
 class TelloDrone:
@@ -55,18 +51,18 @@ class TelloDrone:
         self.drone.send_rc_control(left_right_velocity=lr, forward_backward_velocity=fb,
                                    up_down_velocity=up, yaw_velocity=y)
 
+    def batteryTempCheck(self):
+        self.bat_temp.update()
+
     def mapping_func(self):
         if len(self.new_list_of_bottle_position) > 0:
             self.mapping.update(self.new_list_of_bottle_position)
-    def batteryTempCheck(self):
-        self.bat_temp.update()
+
 
     def first_landing_func(self):
         if self.mission1_done == True and self.mapping_ended == False:
             self.rc_control(0, 0, 0, 0)
 
-            
-            
             #self.drone.land()
             self.mapping_ended = True
 
@@ -77,8 +73,6 @@ class TelloDrone:
             self.newest_yaw = self.new_list_of_bottle_position[bottle_index][1]
             self.provide_bottle_index = True
             self.mission15 = True
-
-
 
 
     def follow_the_bottle(self): #NOWE
@@ -112,6 +106,7 @@ class TelloDrone:
                         time.sleep(2)
                         self.drone.land()
                         self.final_mission_complete_rebel_is_gone = True
+
     def objectDetection(self):
         self.list_of_bottle_position = self.object_detection.update(self.mission1, self.mission2)
         if self.list_of_bottle_position is not None and self.mission1_done == False:
@@ -131,6 +126,8 @@ class TelloDrone:
             else:
                 # print(self.mission1)
                 self.rc_control(0,0,0,15)
+
+
     def main(self):
         self.kill_switch = self.TelloKillSwitch(self)
         self.kill_switch.start()
@@ -168,20 +165,18 @@ class TelloDrone:
         mission_func_obj.start()
 
 
-
-
-
     def __init__(self):
 
         self.yaw = 0
         self.mission1 = True
         self.mission2 = False #DODANE NOWE
+        self.mission15 = False
         self.mission1_done = False
+
         self.mapping_ended = False
         self.new_list_of_bottle_position = []
         self.final_mission_complete_rebel_is_gone = False
         self.provide_bottle_index = False
-        self.mission15 = False
         self.newest_yaw = None
 
         self.drone = Tello()

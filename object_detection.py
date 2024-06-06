@@ -40,13 +40,13 @@ class ObjectDetection:
 
         if person_indx != -1:
             person_xyxy = list_of_xyxy[person_indx]
-            # print(person_xyxy)
             left = person_xyxy[0]
             top = person_xyxy[1]
             width = person_xyxy[2] - person_xyxy[0]
             height = person_xyxy[3] - person_xyxy[1]
             width_dif = (960- width)/2
             height_dif = (720 - height)/2
+
             if not mission_2:
                 if mission:
                     if left > width_dif - 20 and left < (width_dif + 20 + width):
@@ -83,7 +83,6 @@ class ObjectDetection:
                             self.first_order = "land"
 
                 return self.first_order
-            # print(f"top: {top} left: {left} width: {width} height: {height}")
 
         image_ready = results[0].plot()
         cv2.imshow('image', image_ready)
