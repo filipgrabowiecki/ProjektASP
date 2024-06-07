@@ -1,3 +1,4 @@
+
 from threading import Thread, Event
 import time
 from djitellopy import Tello
@@ -55,9 +56,13 @@ class TelloDrone:
         self.bat_temp.update()
 
     def mapping_func(self):
-        if len(self.new_list_of_bottle_position) > 0:
-            self.mapping.update(self.new_list_of_bottle_position)
-
+        if self.input_bottle is not None:
+            return
+        
+        if len(self.new_list_of_bottle_position) > 0 and self.mapping_ended:
+            self.input_bottle = self.mapping.update(self.new_list_of_bottle_position)
+            self.bottle_yaw = self.new_list_of_bottle_position[self.input_bottle][1]
+            
 
     def first_landing_func(self):
         if self.mission1_done == True and self.mapping_ended == False:
@@ -66,20 +71,20 @@ class TelloDrone:
             #self.drone.land()
             self.mapping_ended = True
 
-    def bottle_input(self):
-        if self.mapping_ended and self.provide_bottle_index == False:
-            bottle_index = int(input("Podaj indeks butelki: "))
-            print(bottle_index)
-            self.newest_yaw = self.new_list_of_bottle_position[bottle_index][1]
-            self.provide_bottle_index = True
-            self.mission15 = True
+    # def bottle_input(self):
+    #     if self.mapping_ended and self.provide_bottle_index == False:
+    #         bottle_index = int(input("Podaj indeks butelki: "))
+    #         print(bottle_index)
+    #         self.bottle_yaw = self.new_list_of_bottle_position[bottle_index][1]
+    #         self.provide_bottle_index = True
+    #         self.mission15 = True
 
 
     def follow_the_bottle(self): #NOWE
-        if self.mission15 == True and self.mission2 == False:
+        if self.bottle_yaw is not None and self.mission2 == False:
             yaw_dupa = self.drone.get_yaw()
-            print(f"Yaw_dupa: {yaw_dupa} BottleYaw: {self.newest_yaw} ")
-            if yaw_dupa + 15 > self.newest_yaw > yaw_dupa - 15:
+            print(f"Yaw_dupa: {yaw_dupa} BottleYaw: {self.bottle_yaw} ")
+            if yaw_dupa + 15 > self.bottle_yaw > yaw_dupa - 15:
                 self.rc_control(0,0,0,0)
                 self.mission2 = True
             else:
@@ -145,8 +150,8 @@ class TelloDrone:
         mapping_func_obj = self.Threading(0.1, self.stop_controller, self.mapping_func)
         mapping_func_obj.start()
 
-        bottle_input_obj = self.Threading(0.1, self.stop_controller, self.bottle_input)
-        bottle_input_obj.start()
+        # bottle_input_obj = self.Threading(0.1, self.stop_controller, self.bottle_input)
+        # bottle_input_obj.start()
 
         follow_the_bottle_obj = self.Threading(0.1, self.stop_controller, self.follow_the_bottle)
         follow_the_bottle_obj.start()
@@ -174,10 +179,11 @@ class TelloDrone:
         self.mission1_done = False
 
         self.mapping_ended = False
+        self.input_bottle = None
         self.new_list_of_bottle_position = []
         self.final_mission_complete_rebel_is_gone = False
         self.provide_bottle_index = False
-        self.newest_yaw = None
+        self.bottle_yaw = None
 
         self.drone = Tello()
         self.drone.connect()

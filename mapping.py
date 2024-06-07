@@ -1,12 +1,20 @@
 import time
 import math
-import cv2
-import numpy as np
-
+import pygame
 
 class Mapping:
+    done = False
+    points = None
 
     def update(self, points):
+        if self.done:
+            return
+
+        self.filter(points)
+        return self.display()
+
+
+    def filter(self, points):
         old_all_points = points
 
         # Change yaw to (0;360) form (-180; 180)
@@ -42,20 +50,55 @@ class Mapping:
                     dist_sum = 0
                     yaw_sum = 0
                     a = 0
-        print(new_points)
 
-        # Display mapping
-        background = np.zeros((600, 600, 3), dtype=np.uint8)
-        cv2.circle(background, (300, 300), 5, (255, 0, 0), 2)
-        for i in new_points:
-            radians = math.radians(i[1])
-            x = int(round(i[0] * math.sin(radians), 0))
-            y = int(round(i[0] * math.cos(radians), 0))
-            cv2.circle(background, (300 + x, 300 - y), 3, (0, 255, 0), 2)
+        self.points = new_points
+        print(self.points)
 
-        # cv2.imshow("mapping", background)
-        cv2.imwrite("mai_image.jpg", background)
-        time.sleep(500)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
+    def display(self):
+        pygame.init()
+
+        # Ustawienia okna
+        width, height = 600, 600
+        window = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Okręgi w Pygame")
+
+        # Kolory
+        black = (0, 0, 0)
+
+        # Indeks aktywnego okręgu (domyślnie żaden nie jest aktywny)
+        active_index = None
+
+        # Główna pętla programu
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if pygame.K_1 <= event.key <= pygame.K_9:
+                        index = event.key - pygame.K_1
+                        if index < len(self.points):
+                            active_index = index
+                            running = False
+
+            # Czyszczenie ekranu
+            window.fill(black)
+
+            # Rysowanie okręgów
+            for index, i in enumerate(self.points):
+                radians = math.radians(i[1])
+                x = int(round(i[0] * math.sin(radians), 0))
+                y = int(round(i[0] * math.cos(radians), 0))
+
+                pygame.draw.circle(window, (0, 255, 0), (x, y), 10, 10)
+                if index == active_index:
+                    pygame.draw.circle(window, (255, 0, 0), (x, y), 15, 3)  # Obwódka dla aktywnego okręgu
+
+            # Aktualizacja wyświetlacza
+            pygame.draw.circle(window, (0, 0, 255), (300, 300), 5)  # Obwódka dla aktywnego okręgu
+            pygame.display.flip()
+
+        # Zakończenie Pygame
+        pygame.quit()
+        self.done = True
+        return active_index
+
 
