@@ -15,43 +15,41 @@ class Mapping:
 
 
     def filter(self, points):
-        old_all_points = points
-
         # Change yaw to (0;360) form (-180; 180)
-        all_points = []
-        for i in old_all_points:
+        remaped_points = []
+        for i in points:
             new_yaw = 0
             if i[1] < 0:
                 new_yaw = 360 + i[1]
-                all_points.append([i[0], new_yaw])
+                remaped_points.append([i[0], new_yaw])
             else:
-                all_points.append([i[0], i[1]])
+                remaped_points.append([i[0], i[1]])
 
         a = 0
         yaw_sum = 0
         dist_sum = 0
-        new_points = []
+        filtered = []
 
         # Filter out duplicate points
-        for i in range(len(all_points)):
+        for i in range(len(remaped_points)):
             a += 1
             if a == 1:
-                yaw_sum += all_points[i][1]
-                dist_sum += all_points[i][0]
+                yaw_sum += remaped_points[i][1]
+                dist_sum += remaped_points[i][0]
             else:
-                err = abs(all_points[i][1] - all_points[i-1][1])
+                err = abs(remaped_points[i][1] - remaped_points[i-1][1])
                 if 5 >= err:
-                    yaw_sum += all_points[i][1]
-                    dist_sum += all_points[i][0]
-                    if i == len(all_points) - 1:
-                        new_points.append([int(round(dist_sum / a, 0)), int(round(yaw_sum / a, 0))])
+                    yaw_sum += remaped_points[i][1]
+                    dist_sum += remaped_points[i][0]
+                    if i == len(remaped_points) - 1:
+                        filtered.append([int(round(dist_sum / a, 0)), int(round(yaw_sum / a, 0))])
                 else:
-                    new_points.append([int(round(dist_sum / (a - 1), 0)), int(round(yaw_sum / (a - 1), 0))])
+                    filtered.append([int(round(dist_sum / (a - 1), 0)), int(round(yaw_sum / (a - 1), 0))])
                     dist_sum = 0
                     yaw_sum = 0
                     a = 0
 
-        self.points = new_points
+        self.points = filtered
         print(self.points)
 
     def display(self):
@@ -71,6 +69,7 @@ class Mapping:
         # Główna pętla programu
         running = True
         while running:
+            # Sprawdzanie klawiszy
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_9:
