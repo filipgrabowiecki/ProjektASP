@@ -15,7 +15,6 @@ class Mapping:
 
 
     def filter(self, points):
-        # Change yaw to (0;360) form (-180; 180)
         remaped_points = []
         for i in points:
             new_yaw = 0
@@ -30,7 +29,6 @@ class Mapping:
         dist_sum = 0
         filtered = []
 
-        # Filter out duplicate points
         for i in range(len(remaped_points)):
             a += 1
             if a == 1:
@@ -54,22 +52,14 @@ class Mapping:
 
     def display(self):
         pygame.init()
-
-        # Ustawienia okna
         width, height = 600, 600
         window = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Okręgi w Pygame")
-
-        # Kolory
+        pygame.display.set_caption("Map")
         black = (0, 0, 0)
-
-        # Indeks aktywnego okręgu (domyślnie żaden nie jest aktywny)
         active_index = None
 
-        # Główna pętla programu
         running = True
         while running:
-            # Sprawdzanie klawiszy
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if pygame.K_1 <= event.key <= pygame.K_9:
@@ -78,26 +68,24 @@ class Mapping:
                             active_index = index
                             running = False
 
-            # Czyszczenie ekranu
             window.fill(black)
 
-            # Rysowanie okręgów
             for index, i in enumerate(self.points):
                 radians = math.radians(i[1])
                 x = int(round(i[0] * math.sin(radians), 0))
                 y = int(round(i[0] * math.cos(radians), 0))
+                print(f"x: {x}, y: {y}")
 
-                pygame.draw.circle(window, (0, 255, 0), (x, y), 10, 10)
+                pygame.draw.circle(window, (0, 255, 0), (300 + x, 300 - y), 5, 1)
                 if index == active_index:
-                    pygame.draw.circle(window, (255, 0, 0), (x, y), 15, 3)  # Obwódka dla aktywnego okręgu
+                    pygame.draw.circle(window, (255, 0, 0), (x, y), 6, 1)  # Obwódka dla aktywnego okręgu
 
-            # Aktualizacja wyświetlacza
-            pygame.draw.circle(window, (0, 0, 255), (300, 300), 5)  # Obwódka dla aktywnego okręgu
+            pygame.draw.circle(window, (0, 0, 255), (300, 300), 5, 1)  # Obwódka dla aktywnego okręgu
             pygame.display.flip()
 
-        # Zakończenie Pygame
         pygame.quit()
         self.done = True
-        return active_index
+        print(f"active_index: {active_index}")
+        return self.points[active_index]
 
 

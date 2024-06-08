@@ -55,12 +55,12 @@ class TelloDrone:
         self.bat_temp.update()
 
     def mapping_func(self):
-        if self.input_bottle is not None:
+        #ZMIANA
+        if self.bottle_yaw is not None:
             return
 
         if len(self.list_of_bottles) > 0 and self.mapping_ended:
-            self.input_bottle = self.mapping.update(self.list_of_bottles)
-            self.bottle_yaw = self.list_of_bottles[self.input_bottle][1]
+            self.bottle_yaw = self.mapping.update(self.list_of_bottles)
 
     def first_landing_func(self):
         if self.mission_rotate_done == True and self.mapping_ended == False:
@@ -70,12 +70,13 @@ class TelloDrone:
     def follow_the_bottle(self):
         if self.bottle_yaw is not None and self.mission_fly == False:
             current_yaw = self.drone.get_yaw()
+            print(self.list_of_bottles)
             print(f"Current_yaw: {current_yaw} BottleYaw: {self.bottle_yaw} ")
             if current_yaw + 15 > self.bottle_yaw > current_yaw - 15:
                 self.rc_control(0,0,0,0)
                 self.mission_fly = True
             else:
-                self.rc_control(0, 0, 0, 15)
+                self.rc_control(0, 0, 0, 25)
 
 
     def final_control(self):
@@ -113,7 +114,7 @@ class TelloDrone:
                 print("done")
                 self.mission_rotate = False
             else:
-                self.rc_control(0,0,0,15)
+                self.rc_control(0,0,0,25)
 
     def main(self):
         self.kill_switch = self.TelloKillSwitch(self)
@@ -155,7 +156,6 @@ class TelloDrone:
         self.mission_rotate_done = False
 
         self.mapping_ended = False
-        self.input_bottle = None
         self.bottle_yaw = None
         self.list_of_bottles = []
 
