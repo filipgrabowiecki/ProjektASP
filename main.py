@@ -69,7 +69,7 @@ class TelloDrone:
 
     def follow_the_bottle(self):
         if self.bottle_yaw is not None and self.mission_fly == False:
-            current_yaw = self.drone.get_yaw()
+            current_yaw = self.drone.get_yaw() % 360
             print(self.list_of_bottles)
             print(f"Current_yaw: {current_yaw} BottleYaw: {self.bottle_yaw} ")
             if current_yaw + 15 > self.bottle_yaw > current_yaw - 15:
@@ -110,11 +110,11 @@ class TelloDrone:
 
     def mission_func(self):
         if not self.mission_rotate_done:
-            if self.yaw + 5 > self.drone.get_yaw() > self.yaw - 5:
+            if self.yaw + 5 >self.drone.get_yaw() > self.yaw - 5:
                 print("done")
                 self.mission_rotate = False
             else:
-                self.rc_control(0,0,0,25)
+                self.rc_control(0,0,0,20)
 
     def main(self):
         self.kill_switch = self.TelloKillSwitch(self)

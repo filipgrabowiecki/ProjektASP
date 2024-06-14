@@ -86,6 +86,6 @@ class Mapping:
         pygame.quit()
         self.done = True
         print(f"active_index: {active_index}")
-        return self.points[active_index]
+        return self.points[active_index][1]
 
 
